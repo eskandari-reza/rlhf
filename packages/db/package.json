@@ -2,11 +2,13 @@
   "name": "@rlhf/db",
   "version": "0.0.1",
   "private": true,
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/migrate.ts",
     "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
     "build": "tsc"
   },
   "dependencies": {
@@ -17,6 +19,7 @@
     "@types/node": "^22.20.5",
     "dotenv": "^18.0.7",
     "drizzle-kit": "^0.31.1",
+    "tsx": "^4.23.15",
     "typescript": "^5.8.3"
   }
 }
