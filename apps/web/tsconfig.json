@@ -7,6 +7,8 @@
     "noEmit": true,
     "moduleResolution": "bundler",
     "module": "ESNext",
+    "declaration": false,
+    "declarationMap": false,
     "paths": {
       "@/*": ["./src/*"]
     }
