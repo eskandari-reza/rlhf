@@ -34,7 +34,7 @@ export class AuthGuard implements CanActivate {
         salt: cookieName,
       });
       if (!payload?.id) throw new UnauthorizedException("Invalid session");
-      req.user = { id: payload.id as string, email: payload.email as string };
+      req.user = { id: payload.id as string, email: payload.email as string ,role: (payload.role as string) ?? "user",};
       return true;
     }
 

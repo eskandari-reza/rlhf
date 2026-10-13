@@ -40,21 +40,26 @@ export const { handlers, auth, signIn, signOut }: ReturnType<typeof NextAuth> = 
               if (!user?.passwordHash) return null;
               const ok = await bcrypt.compare(password, user.passwordHash);
               return ok
-                ? { id: user.id, email: user.email, name: user.name }
+                ? { id: user.id, email: user.email, name: user.name , role: user.role}
                 : null;
             },
           }),
         ]
       : []),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) token.id = user.id;
-      return token;
-    },
-    async session({ session, token, user }) {
-      session.user.id = (token?.id as string) ?? user?.id;
-      return session;
-    },
+callbacks: {
+  async jwt({ token, user }) {
+    if (user) {
+      token.id = user.id;
+      token.role = (user as { role?: string }).role ?? "user";
+    }
+    return token;
   },
+  async session({ session, token, user }) {
+    session.user.id = (token?.id as string) ?? user?.id;
+    (session.user as { role?: string }).role =
+      (token?.role as string) ?? (user as { role?: string })?.role ?? "user";
+    return session;
+  },
+},
 });

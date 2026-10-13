@@ -15,6 +15,13 @@
       "when": 1791730763548,
       "tag": "0001_military_starhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791795672382,
+      "tag": "0002_bitter_bastion",
+      "breakpoints": true
     }
   ]
 }
