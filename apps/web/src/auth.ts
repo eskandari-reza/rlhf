@@ -49,12 +49,17 @@ export const { handlers, auth, signIn, signOut }: ReturnType<typeof NextAuth> = 
   ],
 callbacks: {
   async jwt({ token, user }) {
-    if (user) {
-      token.id = user.id;
-      token.role = (user as { role?: string }).role ?? "user";
-    }
-    return token;
-  },
+  if (user) token.id = user.id;
+  if (token.id) {
+    const [row] = await db
+      .select({ role: schema.users.role })
+      .from(schema.users)
+      .where(eq(schema.users.id, token.id as string))
+      .limit(1);
+    token.role = row?.role ?? "user";
+  }
+  return token;
+},
   async session({ session, token, user }) {
     session.user.id = (token?.id as string) ?? user?.id;
     (session.user as { role?: string }).role =
