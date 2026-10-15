@@ -3,7 +3,14 @@
 import { useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-
+const cell: React.CSSProperties = { border: "1px solid #ccc", padding: "4px 10px" };
+type RaterRow = {
+  email: string;
+  voted: number;
+  comparable: number;
+  agreementRate: number | null;
+  share: { a: number; b: number; tie: number };
+};
 type Item = {
   prompt: string;
   language?: string;
@@ -16,7 +23,45 @@ export default function AdminClient() {
   const [result, setResult] = useState("");
   const [uploading, setUploading] = useState(false);
   const [minVotes, setMinVotes] = useState(1);
+  const [raters, setRaters] = useState(3);
+  const [agreement, setAgreement] = useState<Record<string, unknown> | null>(null);
+  const [agreementError, setAgreementError] = useState("");
+  type RaterRow = {
+  email: string;
+  voted: number;
+  comparable: number;
+  agreementRate: number | null;
+  share: { a: number; b: number; tie: number };
+};
+const [raterRows, setRaterRows] = useState<RaterRow[] | null>(null);
+const [raterError, setRaterError] = useState("");
 
+async function loadRaters() {
+  setRaterRows(null);
+  setRaterError("");
+  try {
+    const res = await fetch(`${API}/admin/raters?minVotes=${raters}`, { credentials: "include" });
+    if (!res.ok) throw new Error(`خطای سرور (${res.status})`);
+    const data = await res.json();
+    setRaterRows(data.raters);
+  } catch (e) {
+    setRaterError(e instanceof Error ? e.message : "خطای ناشناخته");
+  }
+}
+
+  async function loadAgreement() {
+  setAgreement(null);
+  setAgreementError("");
+  try {
+    const res = await fetch(`${API}/admin/agreement?raters=${raters}`, {
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error(`خطای سرور (${res.status})`);
+    setAgreement(await res.json());
+  } catch (e) {
+    setAgreementError(e instanceof Error ? e.message : "خطای ناشناخته");
+  }
+}
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     setItems([]);
@@ -109,6 +154,65 @@ export default function AdminClient() {
       <p>
         <a href={`${API}/admin/export?minVotes=${minVotes}`}>دانلود JSONL (chosen / rejected)</a>
       </p>
+            <hr style={{ margin: "32px 0" }} />
+      <h2>توافق ارزیاب‌ها (Fleiss' Kappa)</h2>
+      <label>
+        تعداد رأی برای هر مقایسه:{" "}
+        <input
+          type="number"
+          min={2}
+          value={raters}
+          onChange={(e) => setRaters(Math.max(2, Number(e.target.value) || 2))}
+          style={{ width: 60 }}
+        />
+      </label>{" "}
+      <button onClick={loadAgreement}>محاسبه</button>
+
+      {agreementError && <p style={{ color: "crimson" }}>{agreementError}</p>}
+      {agreement && (
+        <pre dir="ltr" style={{ background: "#f6f6f6", padding: 12, overflowX: "auto" }}>
+          {JSON.stringify(agreement, null, 2)}
+        </pre>
+      )}
+      <hr style={{ margin: "32px 0" }} />
+      <h2>توافق هر ارزیاب با بقیه</h2>
+      <button onClick={loadRaters}>تحلیل ارزیاب‌ها</button>
+      {raterError && <p style={{ color: "crimson" }}>{raterError}</p>}
+      {raterRows && (
+        <div style={{ overflowX: "auto" }}>
+          <table dir="ltr" style={{ borderCollapse: "collapse", marginTop: 12 }}>
+            <thead>
+              <tr>
+                {["ارزیاب", "رأی‌ها", "قابل مقایسه", "توافق", "A", "B", "مساوی"].map((h) => (
+                  <th key={h} style={cell}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {raterRows.map((r) => {
+                const low = r.agreementRate !== null && r.comparable >= 10 && r.agreementRate < 0.6;
+                return (
+                  <tr key={r.email} style={{ background: low ? "#fde8e8" : undefined }}>
+                    <td style={cell}>{r.email}</td>
+                    <td style={cell}>{r.voted}</td>
+                    <td style={cell}>{r.comparable}</td>
+                    <td style={cell}>
+                      {r.agreementRate === null ? "—" : `${Math.round(r.agreementRate * 100)}%`}
+                    </td>
+                    <td style={cell}>{Math.round(r.share.a * 100)}%</td>
+                    <td style={cell}>{Math.round(r.share.b * 100)}%</td>
+                    <td style={cell}>{Math.round(r.share.tie * 100)}%</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <p style={{ fontSize: 13 }}>
+            ردیف قرمز: توافق زیر ۶۰٪ با حداقل ۱۰ مقایسه‌ی قابل مقایسه.
+          </p>
+        </div>
+      )}
+
     </main>
   );
 }
