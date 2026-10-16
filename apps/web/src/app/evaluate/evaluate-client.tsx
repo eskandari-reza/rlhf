@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -77,57 +80,71 @@ export default function EvaluateClient() {
     }
   }
 
-  const box: React.CSSProperties = {
-    flex: 1,
-    minWidth: 280,
-    border: "1px solid #ccc",
-    borderRadius: 8,
-    padding: 16,
-    whiteSpace: "pre-wrap",
-  };
-
   return (
-    <main style={{ maxWidth: 960, margin: "40px auto", padding: 16, fontFamily: "sans-serif" }}>
-      <h1>ارزیابی پاسخ‌ها</h1>
+    <main className="mx-auto max-w-5xl p-4 py-10">
+      <h1 className="mb-6 text-2xl font-bold">ارزیابی پاسخ‌ها</h1>
 
-      {loading && <p>در حال بارگذاری...</p>}
-      {error && <p style={{ color: "crimson" }}>{error}</p>}
+      {loading && <p className="text-muted-foreground">در حال بارگذاری...</p>}
+      {error && <p className="mb-4 text-destructive">{error}</p>}
 
-      {done && <p>🎉 همه‌ی مقایسه‌ها را ارزیابی کرده‌ای. ممنون!</p>}
+      {done && (
+        <Card>
+          <CardContent className="py-10 text-center">
+            🎉 همه‌ی مقایسه‌ها را ارزیابی کرده‌ای. ممنون!
+          </CardContent>
+        </Card>
+      )}
 
       {item && !loading && (
-        <>
-          <section style={{ ...box, flex: "none", background: "#f6f6f6", marginBottom: 16 }}>
-  <         strong>پرسش:</strong>
-            <div dir="auto">{item.prompt}</div>
-          </section>
+        <div className="space-y-4">
+          <Card className="bg-muted">
+            <CardHeader>
+              <CardTitle>پرسش</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div dir="auto" className="whitespace-pre-wrap">{item.prompt}</div>
+            </CardContent>
+          </Card>
 
-          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-            <section style={box}>
-              <strong>پاسخ A</strong>
-              <div dir="auto">{item.a.text}</div>
-            </section>
-            <section style={box}>
-              <strong>پاسخ B</strong>
-              <div dir="auto">{item.b.text}</div>
-            </section>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>پاسخ A</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div dir="auto" className="whitespace-pre-wrap">{item.a.text}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>پاسخ B</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div dir="auto" className="whitespace-pre-wrap">{item.b.text}</div>
+              </CardContent>
+            </Card>
           </div>
 
-          <textarea
+          <Textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="دلیل انتخاب (اختیاری)"
             rows={3}
             dir="auto"
-            style={{ width: "100%", marginTop: 16, padding: 8 }}
           />
 
-          <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
-            <button disabled={submitting} onClick={() => submit("a")}>A بهتر است</button>
-            <button disabled={submitting} onClick={() => submit("tie")}>مساوی</button>
-            <button disabled={submitting} onClick={() => submit("b")}>B بهتر است</button>
+          <div className="flex flex-wrap gap-3">
+            <Button disabled={submitting} onClick={() => submit("a")}>
+              A بهتر است
+            </Button>
+            <Button variant="outline" disabled={submitting} onClick={() => submit("tie")}>
+              مساوی
+            </Button>
+            <Button disabled={submitting} onClick={() => submit("b")}>
+              B بهتر است
+            </Button>
           </div>
-        </>
+        </div>
       )}
     </main>
   );
