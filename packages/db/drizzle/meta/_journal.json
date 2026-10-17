@@ -22,6 +22,13 @@
       "when": 1791795672382,
       "tag": "0002_bitter_bastion",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792249539340,
+      "tag": "0003_superb_annihilus",
+      "breakpoints": true
     }
   ]
 }
