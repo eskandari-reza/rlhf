@@ -24,3 +24,10 @@ rlhf.ir {
 		reverse_proxy web:3000
 	}
 }
+langstudio.ir {
+    reverse_proxy langstudio-web:3000
+}
+
+www.langstudio.ir {
+    redir https://langstudio.ir{uri}
+}
